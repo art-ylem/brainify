@@ -70,7 +70,7 @@ export function Profile({ t }: Props) {
 
   const earnedSet = new Set(achievements.map((a) => a.type));
   const status = userProfile?.subscriptionStatus ?? 'free';
-  const isPremium = status === 'active' || status === 'trial';
+  const isPremium = status === 'active';
 
   return (
     <div class="page">
