@@ -1,26 +1,34 @@
-import type { Bot } from 'grammy';
+import type { Bot, Context } from 'grammy';
+import { resolveLocale, t } from '@brainify/shared';
 
-const SUBSCRIPTION_PRICE = 299; // in smallest currency unit (e.g. 299 RUB = 2.99)
+const SUBSCRIPTION_PRICE = 29900; // in smallest currency unit (29900 kopecks = 299 RUB)
 const SUBSCRIPTION_DAYS = 30;
 const CURRENCY = 'RUB';
 const PROVIDER_TOKEN = process.env.PAYMENT_PROVIDER_TOKEN ?? '';
 
+export async function sendCardInvoice(ctx: Context) {
+  if (!PROVIDER_TOKEN) {
+    const locale = resolveLocale(ctx.from?.language_code);
+    await ctx.reply(t(locale, 'bot.payments_not_configured'));
+    return;
+  }
+
+  const locale = resolveLocale(ctx.from?.language_code);
+
+  await ctx.replyWithInvoice(
+    t(locale, 'bot.invoice_title'),
+    t(locale, 'bot.invoice_description'),
+    'brainify_premium_30d',
+    CURRENCY,
+    [{ label: t(locale, 'bot.invoice_label'), amount: SUBSCRIPTION_PRICE }],
+    { provider_token: PROVIDER_TOKEN },
+  );
+}
+
 export function registerPayments(bot: Bot) {
   // Handle /subscribe command — send invoice
   bot.command('subscribe', async (ctx) => {
-    if (!PROVIDER_TOKEN) {
-      await ctx.reply('Payments not configured.');
-      return;
-    }
-
-    await ctx.replyWithInvoice(
-      'Brainify Premium',
-      'Полный доступ к тренировкам: без ограничений, дуэли, детальная статистика. 30 дней.',
-      'brainify_premium_30d',
-      CURRENCY,
-      [{ label: 'Подписка на 30 дней', amount: SUBSCRIPTION_PRICE }],
-      { provider_token: PROVIDER_TOKEN },
-    );
+    await sendCardInvoice(ctx);
   });
 
   // Pre-checkout — must answer within 10 seconds
@@ -32,6 +40,7 @@ export function registerPayments(bot: Bot) {
   bot.on('message:successful_payment', async (ctx) => {
     const payment = ctx.message.successful_payment;
     const telegramId = ctx.from.id;
+    const locale = resolveLocale(ctx.from?.language_code);
 
     // Call API to activate subscription
     try {
@@ -52,12 +61,12 @@ export function registerPayments(bot: Bot) {
       });
 
       if (response.ok) {
-        await ctx.reply('🎉 Подписка активирована! Полный доступ на 30 дней.');
+        await ctx.reply(t(locale, 'bot.payment_success'));
       } else {
-        await ctx.reply('Оплата получена, но произошла ошибка активации. Обратитесь в поддержку.');
+        await ctx.reply(t(locale, 'bot.payment_error'));
       }
     } catch {
-      await ctx.reply('Оплата получена, но произошла ошибка активации. Обратитесь в поддержку.');
+      await ctx.reply(t(locale, 'bot.payment_error'));
     }
   });
 }

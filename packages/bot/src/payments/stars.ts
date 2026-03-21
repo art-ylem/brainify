@@ -1,18 +1,25 @@
-import type { Bot } from 'grammy';
+import type { Bot, Context } from 'grammy';
+import { resolveLocale, t } from '@brainify/shared';
 
 const STARS_PRICE = 50; // Telegram Stars
 const SUBSCRIPTION_DAYS = 30;
 
+export async function sendStarsInvoice(ctx: Context) {
+  const locale = resolveLocale(ctx.from?.language_code);
+
+  await ctx.replyWithInvoice(
+    t(locale, 'bot.invoice_stars_title'),
+    t(locale, 'bot.invoice_stars_description'),
+    'brainify_premium_stars_30d',
+    'XTR',
+    [{ label: t(locale, 'bot.invoice_stars_label'), amount: STARS_PRICE }],
+    { provider_token: '' },
+  );
+}
+
 export function registerStarsPayments(bot: Bot) {
   bot.command('subscribe_stars', async (ctx) => {
-    await ctx.replyWithInvoice(
-      'Brainify Premium ⭐',
-      'Полный доступ к тренировкам: без ограничений, дуэли, детальная статистика. 30 дней.',
-      'brainify_premium_stars_30d',
-      'XTR',
-      [{ label: 'Подписка (Stars)', amount: STARS_PRICE }],
-      { provider_token: '' },
-    );
+    await sendStarsInvoice(ctx);
   });
 
   // Successful Stars payment — activate subscription
@@ -23,6 +30,7 @@ export function registerStarsPayments(bot: Bot) {
     }
 
     const telegramId = ctx.from.id;
+    const locale = resolveLocale(ctx.from?.language_code);
 
     try {
       const apiHost = process.env.API_HOST ?? 'localhost';
@@ -42,12 +50,12 @@ export function registerStarsPayments(bot: Bot) {
       });
 
       if (response.ok) {
-        await ctx.reply('🎉 Подписка активирована через Stars! Полный доступ на 30 дней.');
+        await ctx.reply(t(locale, 'bot.payment_stars_success'));
       } else {
-        await ctx.reply('Оплата получена, но произошла ошибка активации. Обратитесь в поддержку.');
+        await ctx.reply(t(locale, 'bot.payment_error'));
       }
     } catch {
-      await ctx.reply('Оплата получена, но произошла ошибка активации. Обратитесь в поддержку.');
+      await ctx.reply(t(locale, 'bot.payment_error'));
     }
   });
 }

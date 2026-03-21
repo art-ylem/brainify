@@ -1,5 +1,7 @@
 import type { Bot } from 'grammy';
 import { resolveLocale, t } from '@brainify/shared';
+import { sendCardInvoice } from '../payments/payments.js';
+import { sendStarsInvoice } from '../payments/stars.js';
 
 const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brainify.ellow.tech';
 
@@ -7,6 +9,16 @@ export function registerStartCommand(bot: Bot) {
   bot.command('start', async (ctx) => {
     const locale = resolveLocale(ctx.from?.language_code);
     const payload = ctx.match; // deep link parameter
+
+    // Handle payment deep links from Mini App
+    if (payload === 'subscribe') {
+      await sendCardInvoice(ctx);
+      return;
+    }
+    if (payload === 'subscribe_stars') {
+      await sendStarsInvoice(ctx);
+      return;
+    }
 
     // Check if this is a referral link (ref_<userId>)
     let welcomeKey = 'bot.welcome';

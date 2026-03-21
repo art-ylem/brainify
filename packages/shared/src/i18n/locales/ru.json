@@ -18,7 +18,17 @@
     "open_app": "Открыть Brainify",
     "quick_task": "Быстрое задание",
     "invite_text": "Пригласи друга в Brainify и получите бонус:",
-    "invite_button": "Пригласить друга"
+    "invite_button": "Пригласить друга",
+    "invoice_title": "Brainify Premium",
+    "invoice_description": "Полный доступ к тренировкам: без ограничений, дуэли, детальная статистика. 30 дней.",
+    "invoice_label": "Подписка на 30 дней",
+    "invoice_stars_title": "Brainify Premium ⭐",
+    "invoice_stars_description": "Полный доступ к тренировкам: без ограничений, дуэли, детальная статистика. 30 дней.",
+    "invoice_stars_label": "Подписка (Stars)",
+    "payment_success": "🎉 Подписка активирована! Полный доступ на 30 дней.",
+    "payment_stars_success": "🎉 Подписка активирована через Stars! Полный доступ на 30 дней.",
+    "payment_error": "Оплата получена, но произошла ошибка активации. Обратитесь в поддержку.",
+    "payments_not_configured": "Платежи не настроены."
   },
   "categories": {
     "memory": "Память",
@@ -85,5 +95,41 @@
     "title": "Профиль",
     "achievements": "Достижения",
     "record": "Рекорд"
+  },
+  "achievements": {
+    "first_task": "Первое задание",
+    "streak_3": "3 дня подряд",
+    "streak_7": "7 дней подряд",
+    "streak_30": "30 дней подряд",
+    "tasks_10": "10 заданий",
+    "tasks_100": "100 заданий",
+    "duel_winner": "Первая победа в дуэли"
+  },
+  "subscription": {
+    "title": "Подписка",
+    "current_plan": "Текущий тариф",
+    "free_plan": "Бесплатный",
+    "trial_plan": "Пробный период",
+    "premium_plan": "Premium",
+    "trial_until": "Действует до",
+    "premium_active": "Подписка активна",
+    "features_comparison": "Сравнение тарифов",
+    "feature_tasks_limit": "Заданий в день",
+    "feature_tasks_free": "3",
+    "feature_tasks_premium": "Безлимит",
+    "feature_duels": "Дуэли с друзьями",
+    "feature_stats": "Детальная статистика",
+    "feature_achievements": "Все достижения",
+    "feature_no": "—",
+    "feature_yes": "✓",
+    "pricing_title": "Стоимость",
+    "pricing_stars": "50 Stars / 30 дней",
+    "pricing_rub": "299 ₽ / 30 дней",
+    "payment_method": "Способы оплаты",
+    "payment_stars_desc": "Telegram Stars — быстро и удобно",
+    "payment_provider_desc": "Банковская карта (RUB)",
+    "subscribe_stars": "Оплатить Stars ⭐",
+    "subscribe_card": "Оплатить картой 💳",
+    "upgrade_cta": "Получить полный доступ"
   }
 }

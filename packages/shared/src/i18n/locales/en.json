@@ -18,7 +18,17 @@
     "open_app": "Open Brainify",
     "quick_task": "Quick task",
     "invite_text": "Invite a friend to Brainify and get a bonus:",
-    "invite_button": "Invite a friend"
+    "invite_button": "Invite a friend",
+    "invoice_title": "Brainify Premium",
+    "invoice_description": "Full access to training: unlimited tasks, duels, detailed statistics. 30 days.",
+    "invoice_label": "Subscription for 30 days",
+    "invoice_stars_title": "Brainify Premium ⭐",
+    "invoice_stars_description": "Full access to training: unlimited tasks, duels, detailed statistics. 30 days.",
+    "invoice_stars_label": "Subscription (Stars)",
+    "payment_success": "🎉 Subscription activated! Full access for 30 days.",
+    "payment_stars_success": "🎉 Subscription activated via Stars! Full access for 30 days.",
+    "payment_error": "Payment received, but activation error occurred. Contact support.",
+    "payments_not_configured": "Payments not configured."
   },
   "categories": {
     "memory": "Memory",
@@ -85,5 +95,41 @@
     "title": "Profile",
     "achievements": "Achievements",
     "record": "Record"
+  },
+  "achievements": {
+    "first_task": "First task",
+    "streak_3": "3 days in a row",
+    "streak_7": "7 days in a row",
+    "streak_30": "30 days in a row",
+    "tasks_10": "10 tasks completed",
+    "tasks_100": "100 tasks completed",
+    "duel_winner": "First duel victory"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "current_plan": "Current plan",
+    "free_plan": "Free",
+    "trial_plan": "Trial",
+    "premium_plan": "Premium",
+    "trial_until": "Active until",
+    "premium_active": "Subscription active",
+    "features_comparison": "Plan comparison",
+    "feature_tasks_limit": "Tasks per day",
+    "feature_tasks_free": "3",
+    "feature_tasks_premium": "Unlimited",
+    "feature_duels": "Duels with friends",
+    "feature_stats": "Detailed statistics",
+    "feature_achievements": "All achievements",
+    "feature_no": "—",
+    "feature_yes": "✓",
+    "pricing_title": "Pricing",
+    "pricing_stars": "50 Stars / 30 days",
+    "pricing_rub": "299 ₽ / 30 days",
+    "payment_method": "Payment methods",
+    "payment_stars_desc": "Telegram Stars — fast & easy",
+    "payment_provider_desc": "Bank card (RUB)",
+    "subscribe_stars": "Pay with Stars ⭐",
+    "subscribe_card": "Pay with card 💳",
+    "upgrade_cta": "Get full access"
   }
 }
