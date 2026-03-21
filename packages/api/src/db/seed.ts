@@ -1,8 +1,8 @@
-import { db } from './index.js';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { tasks } from './schema.js';
 import { taskRegistry } from '@brainify/shared';
 
-export async function seedTasks() {
+export async function seedTasks(db: PostgresJsDatabase) {
   const entries = Object.entries(taskRegistry);
 
   const result = await db

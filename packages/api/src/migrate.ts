@@ -19,7 +19,7 @@ try {
   console.log('Migrations completed successfully');
 
   console.log('Running seed...');
-  await seedTasks();
+  await seedTasks(db);
   console.log('Seed completed');
 } catch (error) {
   console.error('Migration/seed failed:', error);
