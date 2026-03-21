@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { getMe, type UserProfile } from '../api/client.js';
+import { getMe, ApiError, type UserProfile } from '../api/client.js';
 
 export function useAuth() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -9,7 +9,14 @@ export function useAuth() {
   useEffect(() => {
     getMe()
       .then(setUser)
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        console.error('[Auth] Failed:', err);
+        if (err instanceof ApiError) {
+          setError(`${err.status}: ${err.message}`);
+        } else {
+          setError(err.message ?? 'Unknown error');
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 

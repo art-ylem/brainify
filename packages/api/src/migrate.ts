@@ -3,6 +3,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { seedTasks } from './db/seed.js';
 
 const connectionString = process.env.DATABASE_URL ?? 'postgresql://brainify:brainify@localhost:5432/brainify';
 
@@ -12,8 +13,18 @@ const db = drizzle(client);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const migrationsFolder = resolve(__dirname, '../drizzle');
 
-console.log('Running migrations...');
-await migrate(db, { migrationsFolder });
-console.log('Migrations completed successfully');
+try {
+  console.log('Running migrations...');
+  await migrate(db, { migrationsFolder });
+  console.log('Migrations completed successfully');
+
+  console.log('Running seed...');
+  await seedTasks();
+  console.log('Seed completed');
+} catch (error) {
+  console.error('Migration/seed failed:', error);
+  await client.end();
+  process.exit(1);
+}
 
 await client.end();

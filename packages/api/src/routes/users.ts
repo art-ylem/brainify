@@ -38,9 +38,13 @@ export async function userRoutes(app: FastifyInstance) {
       if (inserted.length > 0) {
         user = inserted[0];
         isNewUser = true;
-        await db.insert(streaks).values({ userId: user.id });
+        request.log.info({ telegramId: telegramUser.id }, 'New user created');
+        await db.insert(streaks).values({ userId: user.id }).catch((err) => {
+          request.log.error({ err, userId: user.id }, 'Failed to create streak for new user');
+        });
       } else {
         // Race condition: another request created the user
+        request.log.info({ telegramId: telegramUser.id }, 'User creation race condition, fetching existing');
         [user] = await db
           .select()
           .from(users)

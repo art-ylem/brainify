@@ -34,7 +34,20 @@ export function App() {
   }
 
   if (error) {
-    return <div class="loading">{t('common.error')}</div>;
+    const statusMatch = error.match(/^(\d+):/);
+    const status = statusMatch ? Number(statusMatch[1]) : 0;
+    let category: string;
+    if (status === 401) category = 'Authorization error';
+    else if (status >= 500) category = 'Server error';
+    else if (status === 0) category = 'Network error';
+    else category = 'Error';
+
+    return (
+      <div class="loading" style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>{category}</div>
+        <div style={{ fontSize: '13px', color: 'var(--tg-theme-hint-color)' }}>{error}</div>
+      </div>
+    );
   }
 
   function handleSelectTask(taskId: number, taskType: string) {

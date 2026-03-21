@@ -9,13 +9,20 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     ...(initData ? { Authorization: `tma ${initData}` } : {}),
   };
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: { ...headers, ...(options.headers as Record<string, string>) },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { ...headers, ...(options.headers as Record<string, string>) },
+    });
+  } catch (err) {
+    console.error('[API] Network error:', path, err);
+    throw new ApiError(0, 'Network error');
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    console.error('[API] Error:', res.status, path, body);
     throw new ApiError(res.status, (body as { error?: string }).error ?? res.statusText);
   }
 

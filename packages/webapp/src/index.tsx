@@ -1,7 +1,13 @@
 import { render } from 'preact';
 import { App } from './app.js';
+import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { initWebApp } from './lib/telegram.js';
 
 initWebApp();
-render(<App />, document.getElementById('app')!);
+render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
+  document.getElementById('app')!,
+);
 

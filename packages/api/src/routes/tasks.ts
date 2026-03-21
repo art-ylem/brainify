@@ -85,6 +85,7 @@ export async function taskRoutes(app: FastifyInstance) {
 
     const taskDef = taskRegistry[task.type];
     if (!taskDef) {
+      request.log.error({ taskType: task.type, taskId }, 'Unknown task type — not found in taskRegistry');
       return reply.code(500).send({ error: 'Unknown task type' });
     }
 

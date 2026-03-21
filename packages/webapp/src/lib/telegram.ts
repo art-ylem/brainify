@@ -22,7 +22,12 @@ export function getStartParam(): string | undefined {
 export function initWebApp() {
   const webapp = getTelegramWebApp();
   if (webapp) {
+    console.log('[TMA] Telegram WebApp SDK found');
+    console.log('[TMA] initData present:', !!webapp.initData);
+    console.log('[TMA] user present:', !!webapp.initDataUnsafe?.user);
     webapp.ready();
     webapp.expand();
+  } else {
+    console.warn('[TMA] Telegram WebApp SDK not available');
   }
 }

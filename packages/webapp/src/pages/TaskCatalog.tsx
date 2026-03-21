@@ -18,12 +18,18 @@ export function TaskCatalog({ t, onSelect }: Props) {
   const [tasks, setTasks] = useState<TaskInfo[]>([]);
   const [filter, setFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     getTasks(filter ?? undefined)
       .then(setTasks)
-      .catch(() => setTasks([]))
+      .catch((err) => {
+        console.error('[TaskCatalog] Failed to load tasks:', err);
+        setError(err.message ?? 'Failed to load tasks');
+        setTasks([]);
+      })
       .finally(() => setLoading(false));
   }, [filter]);
 
@@ -65,6 +71,10 @@ export function TaskCatalog({ t, onSelect }: Props) {
 
       {loading ? (
         <div class="loading">{t('common.loading')}</div>
+      ) : error ? (
+        <div class="loading" style={{ color: 'var(--tg-theme-destructive-text-color, #e53935)' }}>
+          {t('common.error')}: {error}
+        </div>
       ) : (
         <div>
           {tasks.map((task) => (
