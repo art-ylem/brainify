@@ -6,7 +6,7 @@ const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6379';
 const API_HOST = process.env.API_HOST ?? 'localhost';
 const API_PORT = process.env.API_PORT ?? '3000';
 const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET ?? '';
-const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brinify.ellow.tech';
+const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brainify.ellow.tech';
 
 const QUEUE_NAME = 'daily-reminders';
 

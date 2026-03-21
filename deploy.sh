@@ -7,9 +7,9 @@ set -euo pipefail
 # Требования: Ubuntu 22/24, root или sudo
 # ============================================================
 
-DOMAIN="brinify.ellow.tech"
+DOMAIN="brainify.ellow.tech"
 EMAIL="art-ylem@mail.ru"
-REPO="https://github.com/art-ylem/brinify.git"
+REPO="https://github.com/art-ylem/brainify.git"
 APP_DIR="/opt/brainify"
 
 echo "=== [1/7] Установка Docker ==="
@@ -95,7 +95,7 @@ echo "=== [5/7] Получение SSL-сертификата ==="
 cat > "$APP_DIR/nginx-temp.conf" << 'NGINX_TEMP'
 server {
     listen 80;
-    server_name brinify.ellow.tech;
+    server_name brainify.ellow.tech;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;

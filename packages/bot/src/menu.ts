@@ -1,6 +1,6 @@
 import type { Bot } from 'grammy';
 
-const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brinify.ellow.tech';
+const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brainify.ellow.tech';
 
 export async function setupMenu(bot: Bot) {
   await bot.api.setChatMenuButton({

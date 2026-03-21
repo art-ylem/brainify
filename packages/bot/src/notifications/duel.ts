@@ -1,6 +1,6 @@
 import { Bot, InlineKeyboard } from 'grammy';
 
-const webappUrl = process.env.WEBAPP_URL ?? 'https://brinify.ellow.tech';
+const webappUrl = process.env.WEBAPP_URL ?? 'https://brainify.ellow.tech';
 
 /**
  * Send a duel challenge notification to the opponent.

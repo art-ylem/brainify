@@ -21,7 +21,7 @@ import { notificationRoutes } from './routes/notifications.js';
 
 const app = Fastify({ logger: true });
 
-await app.register(cors, { origin: process.env.WEBAPP_URL ?? 'https://brinify.ellow.tech' });
+await app.register(cors, { origin: process.env.WEBAPP_URL ?? 'https://brainify.ellow.tech' });
 await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
 
 // Routes
