@@ -1,5 +1,5 @@
-import ru from './locales/ru.json';
-import en from './locales/en.json';
+import ru from './locales/ru.json' with { type: 'json' };
+import en from './locales/en.json' with { type: 'json' };
 
 export type Locale = 'ru' | 'en';
 
