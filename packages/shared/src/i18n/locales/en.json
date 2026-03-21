@@ -1,0 +1,89 @@
+{
+  "common": {
+    "start": "Start",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "retry": "Retry",
+    "share": "Share",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "score": "Score",
+    "time": "Time",
+    "ready": "Done"
+  },
+  "bot": {
+    "welcome": "Welcome to Brainify! 🧠\nTrain your brain every day.",
+    "welcome_referral": "Welcome to Brainify! 🧠\nYou were invited by a friend — you both get a bonus!",
+    "open_app": "Open Brainify",
+    "quick_task": "Quick task",
+    "invite_text": "Invite a friend to Brainify and get a bonus:",
+    "invite_button": "Invite a friend"
+  },
+  "categories": {
+    "memory": "Memory",
+    "attention": "Attention",
+    "logic": "Logic",
+    "speed": "Speed"
+  },
+  "tasks": {
+    "schulte": {
+      "name": "Schulte Table",
+      "description": "Tap numbers in order as fast as you can"
+    },
+    "sequence_memory": {
+      "name": "Sequence Memory",
+      "description": "Remember the sequence and reproduce it"
+    },
+    "arithmetic": {
+      "name": "Arithmetic",
+      "description": "Solve problems as fast as you can"
+    },
+    "stroop": {
+      "name": "Stroop Test",
+      "description": "Name the color of the text, ignore the word"
+    },
+    "number_series": {
+      "name": "Number Series",
+      "description": "Find the pattern and continue the series"
+    },
+    "memory_pairs": {
+      "name": "Memory Pairs",
+      "description": "Find all matching pairs of cards"
+    },
+    "pattern_search": {
+      "name": "Pattern Search",
+      "description": "Determine which element continues the pattern"
+    }
+  },
+  "progress": {
+    "title": "Progress",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "by_category": "By category",
+    "streak": "Day streak",
+    "streak_days": "days in a row"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "global": "Global",
+    "friends": "Friends",
+    "week": "Week",
+    "month": "Month",
+    "all_time": "All time"
+  },
+  "duel": {
+    "challenge": "Duel challenge",
+    "accept": "Accept challenge",
+    "result": "Duel result",
+    "you_won": "You won! 🎉",
+    "you_lost": "Not this time 😔",
+    "draw": "It's a draw! 🤝",
+    "waiting": "Waiting for opponent..."
+  },
+  "profile": {
+    "title": "Profile",
+    "achievements": "Achievements",
+    "record": "Record"
+  }
+}

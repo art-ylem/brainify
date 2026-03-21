@@ -1,0 +1,128 @@
+import type { FastifyInstance } from 'fastify';
+import { eq, and } from 'drizzle-orm';
+import { db } from '../db/index.js';
+import { tasks, taskSessions, users } from '../db/schema.js';
+import { authMiddleware } from '../auth/index.js';
+import { taskRegistry } from '@brainify/shared';
+import { checkTaskLimit, incrementDailyTaskCount } from '../middleware/subscription.js';
+
+const VALID_CATEGORIES = ['memory', 'attention', 'logic', 'speed'] as const;
+
+/** Session TTL — 10 minutes */
+const SESSION_TTL_MS = 10 * 60 * 1000;
+
+export async function taskRoutes(app: FastifyInstance) {
+  app.get('/api/tasks', async (request, reply) => {
+    const { category } = request.query as { category?: string };
+
+    if (category && !VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])) {
+      return reply.code(400).send({ error: 'Invalid category' });
+    }
+
+    const conditions = [eq(tasks.isActive, true)];
+    if (category) {
+      conditions.push(eq(tasks.category, category as (typeof VALID_CATEGORIES)[number]));
+    }
+
+    const result = await db.select().from(tasks).where(and(...conditions));
+
+    return result.map((task) => ({
+      id: task.id,
+      type: task.type,
+      category: task.category,
+      name: task.name,
+      descriptionKey: task.descriptionKey,
+    }));
+  });
+
+  app.get('/api/tasks/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const taskId = Number(id);
+
+    if (!Number.isFinite(taskId)) {
+      return reply.code(400).send({ error: 'Invalid task ID' });
+    }
+
+    const [task] = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.id, taskId));
+
+    if (!task) {
+      return reply.code(404).send({ error: 'Task not found' });
+    }
+
+    return {
+      id: task.id,
+      type: task.type,
+      category: task.category,
+      name: task.name,
+      descriptionKey: task.descriptionKey,
+    };
+  });
+
+  // Start a new task session — server generates task, stores full data, returns sanitized data to client
+  app.post('/api/tasks/:id/start', { preHandler: [authMiddleware, checkTaskLimit] }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const taskId = Number(id);
+    const { telegramUser } = request.auth;
+
+    if (!Number.isFinite(taskId)) {
+      return reply.code(400).send({ error: 'Invalid task ID' });
+    }
+
+    const body = request.body as { difficulty?: unknown } | null;
+    const difficulty = body?.difficulty !== undefined ? Number(body.difficulty) : 1;
+    if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 5) {
+      return reply.code(400).send({ error: 'difficulty must be an integer between 1 and 5' });
+    }
+
+    // Verify task exists
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
+    if (!task) {
+      return reply.code(404).send({ error: 'Task not found' });
+    }
+
+    const taskDef = taskRegistry[task.type];
+    if (!taskDef) {
+      return reply.code(500).send({ error: 'Unknown task type' });
+    }
+
+    // Look up user
+    const [user] = await db.select().from(users).where(eq(users.telegramId, BigInt(telegramUser.id)));
+    if (!user) {
+      return reply.code(404).send({ error: 'User not found' });
+    }
+
+    // Generate full task (with answers)
+    const generated = taskDef.generate({ difficulty });
+
+    // Store full task data in session
+    const [session] = await db
+      .insert(taskSessions)
+      .values({
+        userId: user.id,
+        taskId,
+        taskType: task.type,
+        difficulty,
+        generatedData: generated,
+        expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+      })
+      .returning();
+
+    // Return sanitized data (no answers)
+    const clientData = taskDef.sanitizeForClient(generated.data);
+
+    // Increment daily task counter for free tier tracking
+    await incrementDailyTaskCount(user.id);
+
+    return {
+      sessionId: session.id,
+      type: generated.type,
+      category: generated.category,
+      difficulty: generated.difficulty,
+      data: clientData,
+      timeLimitMs: generated.timeLimitMs ?? null,
+    };
+  });
+}
