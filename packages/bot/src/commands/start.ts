@@ -1,7 +1,7 @@
 import type { Bot } from 'grammy';
 import { resolveLocale, t } from '@brainify/shared';
 
-const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brainify.app';
+const WEBAPP_URL = process.env.WEBAPP_URL ?? 'https://brinify.ellow.tech';
 
 export function registerStartCommand(bot: Bot) {
   bot.command('start', async (ctx) => {
