@@ -39,10 +39,9 @@ COPY --from=build-shared /app/packages/shared/dist packages/shared/dist
 COPY --from=build-shared /app/packages/shared/package.json packages/shared/
 COPY --from=build-api /app/packages/api/dist packages/api/dist
 COPY --from=build-api /app/packages/api/package.json packages/api/
-COPY --from=build-api /app/packages/api/drizzle.config.ts packages/api/
 COPY --from=build-api /app/packages/api/drizzle packages/api/drizzle
 EXPOSE 3000
-CMD ["node", "packages/api/dist/index.js"]
+CMD ["sh", "-c", "node packages/api/dist/migrate.js && node packages/api/dist/index.js"]
 
 # ---- Bot Runtime ----
 FROM node:20-alpine AS bot
