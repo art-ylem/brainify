@@ -9,6 +9,8 @@ import { Leaderboard } from './pages/Leaderboard.js';
 import { Duels } from './pages/Duels.js';
 import { Profile } from './pages/Profile.js';
 import { NavBar } from './components/NavBar.js';
+import { LoginScreen } from './components/LoginScreen.js';
+import { GuestBanner } from './components/GuestBanner.js';
 import type { AttemptResult } from './api/client.js';
 
 type Page = 'catalog' | 'play' | 'result' | 'progress' | 'leaderboard' | 'duels' | 'profile';
@@ -23,17 +25,19 @@ interface PlayState {
 }
 
 export function App() {
-  const { user: _user, loading, error } = useAuth();
+  const { user: _user, loading, error, mode, loginViaTelegram, logout } = useAuth();
   const { t, locale: _locale, setLocale: _setLocale } = useI18n();
   const [page, setPage] = useState<Page>('catalog');
   const [playState, setPlayState] = useState<PlayState | null>(null);
   const [lastResult, setLastResult] = useState<AttemptResult | null>(null);
+  const [guestBrowsing, setGuestBrowsing] = useState(false);
 
   if (loading) {
     return <div class="loading">{t('common.loading')}</div>;
   }
 
-  if (error) {
+  // TMA mode: show error if auth failed
+  if (error && mode === 'tma') {
     const statusMatch = error.match(/^(\d+):/);
     const status = statusMatch ? Number(statusMatch[1]) : 0;
     let category: string;
@@ -49,6 +53,13 @@ export function App() {
       </div>
     );
   }
+
+  // Guest mode: show login screen on first visit
+  if (mode === 'guest' && !guestBrowsing) {
+    return <LoginScreen t={t} onAuth={loginViaTelegram} onGuest={() => setGuestBrowsing(true)} />;
+  }
+
+  const isGuest = mode === 'guest';
 
   function handleSelectTask(taskId: number, taskType: string) {
     setPlayState({ taskId, taskType });
@@ -76,7 +87,10 @@ export function App() {
   return (
     <>
       {page === 'catalog' && (
-        <TaskCatalog t={t} onSelect={handleSelectTask} />
+        <>
+          {isGuest && <div style={{ padding: '16px 16px 0' }}><GuestBanner t={t} onAuth={loginViaTelegram} /></div>}
+          <TaskCatalog t={t} onSelect={handleSelectTask} />
+        </>
       )}
       {page === 'play' && playState && (
         <TaskPlay
@@ -87,6 +101,9 @@ export function App() {
           duelTaskData={playState.duelTaskData}
           duelId={playState.duelId}
           duelRole={playState.duelRole}
+          isGuest={isGuest}
+          mode={mode}
+          onAuth={loginViaTelegram}
           onComplete={handleTaskComplete}
           onBack={handleBackToCatalog}
         />
@@ -97,6 +114,8 @@ export function App() {
           result={lastResult}
           onRetry={handleRetry}
           onBack={handleBackToCatalog}
+          isGuest={isGuest}
+          onAuth={loginViaTelegram}
         />
       )}
       {page === 'progress' && (
@@ -122,7 +141,7 @@ export function App() {
         />
       )}
       {page === 'profile' && (
-        <Profile t={t} />
+        <Profile t={t} mode={mode} onLogout={logout} />
       )}
       <NavBar
         t={t}
@@ -131,6 +150,7 @@ export function App() {
           if (p === 'catalog') handleBackToCatalog();
           else setPage(p as Page);
         }}
+        isGuest={isGuest}
       />
     </>
   );

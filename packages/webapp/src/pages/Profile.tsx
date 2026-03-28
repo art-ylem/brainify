@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'preact/hooks';
 import { getAchievements, getProgress, getMe, type Achievement, type UserProfile } from '../api/client.js';
+import type { AuthMode } from '../hooks/useAuthState.js';
 
 interface Props {
   t: (key: string) => string;
+  mode?: AuthMode;
+  onLogout?: () => void;
 }
 
 const ACHIEVEMENT_META: Record<string, { emoji: string; nameKey: string }> = {
@@ -19,8 +22,20 @@ const ALL_ACHIEVEMENTS = Object.keys(ACHIEVEMENT_META);
 
 const BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME ?? 'BrainifyBot';
 
-function openBot(command: string) {
-  window.Telegram?.WebApp?.openTelegramLink?.(`https://t.me/${BOT_USERNAME}?start=${command}`);
+function openSubscription(mode?: AuthMode) {
+  if (mode === 'web') {
+    window.open(`https://t.me/${BOT_USERNAME}?start=subscribe`, '_blank');
+  } else {
+    window.Telegram?.WebApp?.openTelegramLink?.(`https://t.me/${BOT_USERNAME}?start=subscribe`);
+  }
+}
+
+function openSubscriptionStars(mode?: AuthMode) {
+  if (mode === 'web') {
+    window.open(`https://t.me/${BOT_USERNAME}?start=subscribe_stars`, '_blank');
+  } else {
+    window.Telegram?.WebApp?.openTelegramLink?.(`https://t.me/${BOT_USERNAME}?start=subscribe_stars`);
+  }
 }
 
 const FEATURES = [
@@ -30,7 +45,7 @@ const FEATURES = [
   { labelKey: 'subscription.feature_achievements', freeKey: 'subscription.feature_no', premiumKey: 'subscription.feature_yes' },
 ];
 
-export function Profile({ t }: Props) {
+export function Profile({ t, mode, onLogout }: Props) {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [streak, setStreak] = useState<{ current: number; longest: number } | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -214,14 +229,14 @@ export function Profile({ t }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 class="btn btn-primary"
-                onClick={() => openBot('subscribe_stars')}
+                onClick={() => openSubscriptionStars(mode)}
               >
                 {t('subscription.subscribe_stars')}
               </button>
               <button
                 class="btn btn-primary"
                 style={{ background: 'var(--tg-theme-text-color)', color: 'var(--tg-theme-bg-color)', opacity: 0.85 }}
-                onClick={() => openBot('subscribe')}
+                onClick={() => openSubscription(mode)}
               >
                 {t('subscription.subscribe_card')}
               </button>
@@ -265,6 +280,16 @@ export function Profile({ t }: Props) {
           })}
         </div>
       </div>
+
+      {mode === 'web' && onLogout && (
+        <button
+          class="btn-primary"
+          style={{ background: 'var(--tg-theme-secondary-bg-color)', color: 'var(--tg-theme-text-color)', marginTop: '16px' }}
+          onClick={onLogout}
+        >
+          {t('profile.logout')}
+        </button>
+      )}
     </div>
   );
 }

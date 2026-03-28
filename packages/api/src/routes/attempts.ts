@@ -2,29 +2,20 @@ import type { FastifyInstance } from 'fastify';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { taskAttempts, users, taskSessions } from '../db/schema.js';
-import { authMiddleware } from '../auth/index.js';
+import { optionalAuthMiddleware } from '../auth/index.js';
 import { taskRegistry } from '@brainify/shared';
 import type { GeneratedTask } from '@brainify/shared';
 import { updateStreak } from '../services/streaks.js';
 import { checkAchievements } from '../services/achievements.js';
+import { getGuestSession, deleteGuestSession } from '../services/guest-session.js';
 
 export async function attemptRoutes(app: FastifyInstance) {
-  app.post('/api/attempts', { preHandler: authMiddleware }, async (request, reply) => {
-    const { telegramUser } = request.auth;
+  app.post('/api/attempts', { preHandler: optionalAuthMiddleware }, async (request, reply) => {
     const body = request.body as {
       sessionId?: unknown;
       answer?: unknown;
       timeMs?: unknown;
     };
-
-    // Validate input types
-    if (
-      typeof body.sessionId !== 'number' ||
-      !Number.isInteger(body.sessionId) ||
-      body.sessionId <= 0
-    ) {
-      return reply.code(400).send({ error: 'sessionId must be a positive integer' });
-    }
 
     if (typeof body.timeMs !== 'number' || !Number.isFinite(body.timeMs) || body.timeMs <= 0) {
       return reply.code(400).send({ error: 'timeMs must be a positive number' });
@@ -32,6 +23,49 @@ export async function attemptRoutes(app: FastifyInstance) {
 
     if (body.answer === undefined || body.answer === null) {
       return reply.code(400).send({ error: 'answer is required' });
+    }
+
+    // Guest mode: sessionId is a string like "g_<uuid>"
+    if (!request.auth) {
+      if (typeof body.sessionId !== 'string' || !body.sessionId.startsWith('g_')) {
+        return reply.code(400).send({ error: 'Invalid guest sessionId' });
+      }
+
+      const guestSession = await getGuestSession(body.sessionId);
+      if (!guestSession) {
+        return reply.code(404).send({ error: 'Session not found or expired' });
+      }
+
+      const taskDef = taskRegistry[guestSession.taskType];
+      if (!taskDef) {
+        return reply.code(500).send({ error: 'Unknown task type' });
+      }
+
+      const result = taskDef.validate(guestSession.generatedData, body.answer, body.timeMs);
+      await deleteGuestSession(body.sessionId);
+
+      return {
+        id: 0,
+        taskId: guestSession.taskId,
+        score: result.score,
+        timeMs: Math.round(body.timeMs),
+        difficulty: guestSession.difficulty,
+        isCorrect: result.isCorrect,
+        details: result.details ?? null,
+        completedAt: '',
+      };
+    }
+
+    // Authenticated mode
+    const { telegramUser } = request.auth;
+
+    // Validate sessionId for authenticated users
+    if (
+      typeof body.sessionId !== 'number' ||
+      !Number.isInteger(body.sessionId) ||
+      body.sessionId <= 0
+    ) {
+      return reply.code(400).send({ error: 'sessionId must be a positive integer' });
     }
 
     // Look up user

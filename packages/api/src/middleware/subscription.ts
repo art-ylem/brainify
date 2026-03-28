@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { getSubscriptionInfo } from '../services/subscription.js';
 import { redis } from '../db/redis.js';
+import { getGuestDailyCount, GUEST_DAILY_LIMIT } from '../services/guest-session.js';
 
 const FREE_DAILY_LIMIT = 3;
 
@@ -28,8 +29,23 @@ export async function incrementDailyTaskCount(userId: number): Promise<void> {
 /**
  * Middleware: check if user hit the free daily task limit.
  * Should be applied to task session creation endpoint.
+ * Supports guest mode: checks by IP if no auth.
  */
 export async function checkTaskLimit(request: FastifyRequest, reply: FastifyReply) {
+  // Guest mode: check by IP
+  if (!request.auth) {
+    const ip = request.ip;
+    const count = await getGuestDailyCount(ip);
+    if (count >= GUEST_DAILY_LIMIT) {
+      return reply.code(403).send({
+        error: 'Daily guest limit reached',
+        limit: GUEST_DAILY_LIMIT,
+        guestLimitReached: true,
+      });
+    }
+    return;
+  }
+
   const { telegramUser } = request.auth;
   // auth middleware already ran and set request.auth
   // We need the DB user id — it's resolved from telegramId

@@ -1,5 +1,8 @@
 import { useEffect, useState, useRef } from 'preact/hooks';
-import { startTaskSession, submitAttempt, submitChallengerResult, submitOpponentResult, type TaskSession, type AttemptResult } from '../api/client.js';
+import { startTaskSession, submitAttempt, submitChallengerResult, submitOpponentResult, ApiError, type TaskSession, type AttemptResult } from '../api/client.js';
+import { GuestLimitScreen } from '../components/GuestLimitScreen.js';
+import { PaywallScreen } from '../components/PaywallScreen.js';
+import type { AuthMode } from '../hooks/useAuthState.js';
 import { SchulteUI } from '../components/tasks/SchulteUI.js';
 import { SequenceMemoryUI } from '../components/tasks/SequenceMemoryUI.js';
 import { ArithmeticUI } from '../components/tasks/ArithmeticUI.js';
@@ -17,6 +20,9 @@ interface Props {
   duelTaskData?: Record<string, unknown>;
   duelId?: number;
   duelRole?: 'challenger' | 'opponent';
+  isGuest?: boolean;
+  mode?: AuthMode;
+  onAuth?: (data: Record<string, unknown>) => void;
   onComplete: (result: AttemptResult) => void;
   onBack: () => void;
 }
@@ -37,7 +43,7 @@ export interface TaskUIProps {
   t: (key: string) => string;
 }
 
-export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, duelId, duelRole, onComplete, onBack }: Props) {
+export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, duelId, duelRole, isGuest, mode, onAuth, onComplete, onBack }: Props) {
   const isDuel = duelSessionId != null && duelId != null && duelRole != null;
   const [session, setSession] = useState<TaskSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +54,7 @@ export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, due
   useEffect(() => {
     setLoading(true);
     setError(null);
+    setSession(null);
 
     if (isDuel && duelTaskData) {
       // Duel mode: use pre-existing session data
@@ -68,10 +75,16 @@ export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, due
           setSession(s);
           startTimeRef.current = Date.now();
         })
-        .catch((err) => setError(err.message))
+        .catch((err) => {
+          if (err instanceof ApiError && err.status === 403) {
+            setError('__limit__');
+          } else {
+            setError(err.message);
+          }
+        })
         .finally(() => setLoading(false));
     }
-  }, [taskId, duelSessionId]);
+  }, [taskId, duelSessionId, isGuest]);
 
   async function handleAnswer(answer: unknown) {
     if (!session || submitting) return;
@@ -108,6 +121,12 @@ export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, due
   }
 
   if (error) {
+    if (error === '__limit__') {
+      if (isGuest && onAuth) {
+        return <GuestLimitScreen t={t} onAuth={onAuth} onBack={onBack} />;
+      }
+      return <PaywallScreen t={t} mode={mode} onBack={onBack} />;
+    }
     return (
       <div class="page" style={{ textAlign: 'center', paddingTop: '40px' }}>
         <p>{t('common.error')}: {error}</p>

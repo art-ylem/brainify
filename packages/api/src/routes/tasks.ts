@@ -2,9 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { tasks, taskSessions, users } from '../db/schema.js';
-import { authMiddleware } from '../auth/index.js';
+import { optionalAuthMiddleware } from '../auth/index.js';
 import { taskRegistry } from '@brainify/shared';
 import { checkTaskLimit, incrementDailyTaskCount } from '../middleware/subscription.js';
+import { createGuestSession, incrementGuestDailyCount } from '../services/guest-session.js';
+import { randomUUID } from 'node:crypto';
 
 const VALID_CATEGORIES = ['memory', 'attention', 'logic', 'speed'] as const;
 
@@ -62,10 +64,9 @@ export async function taskRoutes(app: FastifyInstance) {
   });
 
   // Start a new task session — server generates task, stores full data, returns sanitized data to client
-  app.post('/api/tasks/:id/start', { preHandler: [authMiddleware, checkTaskLimit] }, async (request, reply) => {
+  app.post('/api/tasks/:id/start', { preHandler: [optionalAuthMiddleware, checkTaskLimit] }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const taskId = Number(id);
-    const { telegramUser } = request.auth;
 
     if (!Number.isFinite(taskId)) {
       return reply.code(400).send({ error: 'Invalid task ID' });
@@ -89,14 +90,39 @@ export async function taskRoutes(app: FastifyInstance) {
       return reply.code(500).send({ error: 'Unknown task type' });
     }
 
+    // Generate full task (with answers)
+    const generated = taskDef.generate({ difficulty });
+
+    // Guest mode: store session in Redis only
+    if (!request.auth) {
+      const guestSessionId = `g_${randomUUID()}`;
+      await createGuestSession(guestSessionId, {
+        taskId,
+        taskType: task.type,
+        difficulty,
+        generatedData: generated,
+      });
+      await incrementGuestDailyCount(request.ip);
+
+      const clientData = taskDef.sanitizeForClient(generated.data);
+      return {
+        sessionId: guestSessionId,
+        type: generated.type,
+        category: generated.category,
+        difficulty: generated.difficulty,
+        data: clientData,
+        timeLimitMs: generated.timeLimitMs ?? null,
+        guest: true,
+      };
+    }
+
+    const { telegramUser } = request.auth;
+
     // Look up user
     const [user] = await db.select().from(users).where(eq(users.telegramId, BigInt(telegramUser.id)));
     if (!user) {
       return reply.code(404).send({ error: 'User not found' });
     }
-
-    // Generate full task (with answers)
-    const generated = taskDef.generate({ difficulty });
 
     // Store full task data in session
     const [session] = await db

@@ -18,13 +18,15 @@ import { achievementRoutes } from './routes/achievements.js';
 import { shareRoutes } from './routes/share.js';
 import { internalRoutes } from './routes/subscription.js';
 import { notificationRoutes } from './routes/notifications.js';
+import { authRoutes } from './routes/auth.js';
 
-const app = Fastify({ logger: true });
+const app = Fastify({ logger: true, trustProxy: true });
 
 await app.register(cors, { origin: process.env.WEBAPP_URL ?? 'https://brainify.ellow.tech' });
 await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
 
 // Routes
+await app.register(authRoutes);
 await app.register(userRoutes);
 await app.register(taskRoutes);
 await app.register(attemptRoutes);

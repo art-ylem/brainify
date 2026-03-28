@@ -94,7 +94,8 @@
   "profile": {
     "title": "Profile",
     "achievements": "Achievements",
-    "record": "Record"
+    "record": "Record",
+    "logout": "Log out"
   },
   "achievements": {
     "first_task": "First task",
@@ -131,5 +132,22 @@
     "subscribe_stars": "Pay with Stars ⭐",
     "subscribe_card": "Pay with card 💳",
     "upgrade_cta": "Get full access"
+  },
+  "login": {
+    "description": "Train your memory, attention and logic every day",
+    "try_without": "Try without signing in"
+  },
+  "guest": {
+    "banner_title": "Guest mode",
+    "banner_subtitle": "Sign in with Telegram to save your progress",
+    "limit_title": "Limit reached",
+    "limit_text": "You have tried 3 tasks. Sign in with Telegram to get full access.",
+    "result_cta": "Sign in to save progress and compete"
+  },
+  "paywall": {
+    "title": "Premium feature",
+    "text": "This feature requires a Premium subscription",
+    "features": "Unlimited tasks, duels, statistics and all achievements",
+    "cta": "Get Premium"
   }
 }

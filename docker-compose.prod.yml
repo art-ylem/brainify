@@ -47,6 +47,7 @@ services:
       API_PORT: 3000
       BOT_TOKEN: ${BOT_TOKEN}
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
     expose:
       - "3000"

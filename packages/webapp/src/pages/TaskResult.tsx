@@ -1,14 +1,19 @@
 import type { AttemptResult } from '../api/client.js';
 import { ShareButton } from '../components/ShareButton.js';
+import { TelegramLoginButton } from '../components/TelegramLoginButton.js';
+
+const BOT_USERNAME = import.meta.env.VITE_BOT_USERNAME ?? 'BrainifyBot';
 
 interface Props {
   t: (key: string) => string;
   result: AttemptResult;
   onRetry: () => void;
   onBack: () => void;
+  isGuest?: boolean;
+  onAuth?: (data: Record<string, unknown>) => void;
 }
 
-export function TaskResult({ t, result, onRetry, onBack }: Props) {
+export function TaskResult({ t, result, onRetry, onBack, isGuest, onAuth }: Props) {
   const emoji = result.isCorrect ? '🎉' : '💪';
   const seconds = (result.timeMs / 1000).toFixed(1);
 
@@ -36,6 +41,15 @@ export function TaskResult({ t, result, onRetry, onBack }: Props) {
           </div>
         )}
       </div>
+
+      {isGuest && onAuth && (
+        <div class="card" style={{ maxWidth: '300px', margin: '0 auto 16px', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', color: 'var(--tg-theme-hint-color)', marginBottom: '8px' }}>
+            {t('guest.result_cta')}
+          </p>
+          <TelegramLoginButton botName={BOT_USERNAME} onAuth={onAuth} />
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '8px', maxWidth: '300px', margin: '0 auto', flexWrap: 'wrap' }}>
         <button

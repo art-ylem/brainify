@@ -1,3 +1,8 @@
+/** Check if running inside Telegram Mini App */
+export function isTelegramMiniApp(): boolean {
+  return !!window.Telegram?.WebApp?.initData;
+}
+
 /** Access Telegram WebApp SDK */
 export function getTelegramWebApp() {
   return window.Telegram?.WebApp;
@@ -28,6 +33,6 @@ export function initWebApp() {
     webapp.ready();
     webapp.expand();
   } else {
-    console.warn('[TMA] Telegram WebApp SDK not available');
+    console.log('[Web] Running in browser mode');
   }
 }

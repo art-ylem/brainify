@@ -4,8 +4,9 @@ import { getTelegramUser } from '../lib/telegram.js';
 
 export function useI18n() {
   const tgUser = getTelegramUser();
+  const langCode = tgUser?.language_code ?? navigator.language?.slice(0, 2);
   const [locale, setLocale] = useState<Locale>(() =>
-    resolveLocale(tgUser?.language_code),
+    resolveLocale(langCode),
   );
 
   const t = useCallback(

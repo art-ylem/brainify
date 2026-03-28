@@ -1,12 +1,27 @@
 import { getInitData } from '../lib/telegram.js';
+import { isTelegramMiniApp } from '../lib/telegram.js';
+import { getWebToken, setWebToken } from '../lib/auth.js';
 
 const API_BASE = '';
 
+function getAuthHeader(): string | null {
+  // Strategy 1: Telegram Mini App
+  if (isTelegramMiniApp()) {
+    const initData = getInitData();
+    if (initData) return `tma ${initData}`;
+  }
+  // Strategy 2: Web JWT
+  const webToken = getWebToken();
+  if (webToken) return `Bearer ${webToken}`;
+  // No auth (guest)
+  return null;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const initData = getInitData();
+  const authHeader = getAuthHeader();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(initData ? { Authorization: `tma ${initData}` } : {}),
+    ...(authHeader ? { Authorization: authHeader } : {}),
   };
 
   let res: Response;
@@ -84,7 +99,7 @@ export function getTask(id: number) {
 // --- Sessions ---
 
 export interface TaskSession {
-  sessionId: number;
+  sessionId: number | string;
   type: string;
   category: string;
   difficulty: number;
@@ -112,7 +127,7 @@ export interface AttemptResult {
   completedAt: string;
 }
 
-export function submitAttempt(sessionId: number, answer: unknown, timeMs: number) {
+export function submitAttempt(sessionId: number | string, answer: unknown, timeMs: number) {
   return request<AttemptResult>('/api/attempts', {
     method: 'POST',
     body: JSON.stringify({ sessionId, answer, timeMs }),
@@ -223,14 +238,14 @@ export function acceptDuel(duelId: number) {
   });
 }
 
-export function submitChallengerResult(duelId: number, sessionId: number, answer: unknown, timeMs: number) {
+export function submitChallengerResult(duelId: number, sessionId: number | string, answer: unknown, timeMs: number) {
   return request<DuelResultResponse>(`/api/duels/${duelId}/challenger-result`, {
     method: 'POST',
     body: JSON.stringify({ sessionId, answer, timeMs }),
   });
 }
 
-export function submitOpponentResult(duelId: number, sessionId: number, answer: unknown, timeMs: number) {
+export function submitOpponentResult(duelId: number, sessionId: number | string, answer: unknown, timeMs: number) {
   return request<DuelResultResponse>(`/api/duels/${duelId}/opponent-result`, {
     method: 'POST',
     body: JSON.stringify({ sessionId, answer, timeMs }),
@@ -246,4 +261,20 @@ export interface Achievement {
 
 export function getAchievements() {
   return request<Achievement[]>('/api/achievements');
+}
+
+// --- Telegram Login (Web auth) ---
+
+export interface TelegramLoginResponse {
+  token: string;
+  user: UserProfile;
+}
+
+export async function loginWithTelegram(data: Record<string, unknown>): Promise<TelegramLoginResponse> {
+  const result = await request<TelegramLoginResponse>('/api/auth/telegram', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  setWebToken(result.token);
+  return result;
 }
