@@ -20,3 +20,4 @@ export {
   memoryPairsTask,
   patternSearchTask,
 } from './tasks/index.js';
+export { getMaxScore } from './tasks/scoring.js';

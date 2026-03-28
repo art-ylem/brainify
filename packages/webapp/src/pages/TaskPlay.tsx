@@ -15,6 +15,8 @@ interface Props {
   t: (key: string) => string;
   taskId: number;
   taskType: string;
+  difficulty?: number;
+  isDailyChallenge?: boolean;
   /** Pre-existing session for duel mode */
   duelSessionId?: number;
   duelTaskData?: Record<string, unknown>;
@@ -43,7 +45,7 @@ export interface TaskUIProps {
   t: (key: string) => string;
 }
 
-export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, duelId, duelRole, isGuest, mode, onAuth, onComplete, onBack }: Props) {
+export function TaskPlay({ t, taskId, taskType, difficulty, isDailyChallenge, duelSessionId, duelTaskData, duelId, duelRole, isGuest, mode, onAuth, onComplete, onBack }: Props) {
   const isDuel = duelSessionId != null && duelId != null && duelRole != null;
   const [session, setSession] = useState<TaskSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export function TaskPlay({ t, taskId, taskType, duelSessionId, duelTaskData, due
       setLoading(false);
     } else {
       // Normal mode: create new session
-      startTaskSession(taskId)
+      startTaskSession(taskId, difficulty ?? 1, isDailyChallenge)
         .then((s) => {
           setSession(s);
           startTimeRef.current = Date.now();

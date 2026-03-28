@@ -18,23 +18,29 @@ export function TaskResult({ t, result, onRetry, onBack, isGuest, onAuth }: Prop
   const seconds = (result.timeMs / 1000).toFixed(1);
 
   return (
-    <div class="page" style={{ textAlign: 'center', paddingTop: '40px' }}>
+    <div class="page text-center fade-in" style={{ paddingTop: '40px' }}>
       <div style={{ fontSize: '48px', marginBottom: '16px' }}>{emoji}</div>
 
-      <div class="card" style={{ maxWidth: '300px', margin: '0 auto 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+      <div class="card slide-up" style={{ maxWidth: '300px', margin: '0 auto 24px' }}>
+        {result.difficulty > 0 && (
+          <div class="flex" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>{t('difficulty.title')}</span>
+            <span class="font-bold">{t(`difficulty.${result.difficulty}`)}</span>
+          </div>
+        )}
+        <div class="flex" style={{ justifyContent: 'space-between', marginBottom: '8px' }}>
           <span>{t('common.score')}</span>
           <span style={{ fontWeight: 700, fontSize: '20px' }}>{result.score}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div class="flex" style={{ justifyContent: 'space-between' }}>
           <span>{t('common.time')}</span>
           <span style={{ fontWeight: 700, fontSize: '20px' }}>{seconds}s</span>
         </div>
         {result.details && (
-          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--tg-theme-hint-color)' }}>
+          <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--brand-border)' }}>
             {Object.entries(result.details).map(([key, val]) => (
-              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginTop: '4px' }}>
-                <span style={{ color: 'var(--tg-theme-hint-color)' }}>{key}</span>
+              <div key={key} class="flex" style={{ justifyContent: 'space-between', fontSize: '14px', marginTop: '4px' }}>
+                <span class="text-hint">{key}</span>
                 <span>{String(val)}</span>
               </div>
             ))}
@@ -44,14 +50,14 @@ export function TaskResult({ t, result, onRetry, onBack, isGuest, onAuth }: Prop
 
       {isGuest && onAuth && (
         <div class="card" style={{ maxWidth: '300px', margin: '0 auto 16px', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: 'var(--tg-theme-hint-color)', marginBottom: '8px' }}>
+          <p class="text-hint" style={{ fontSize: '13px', marginBottom: '8px' }}>
             {t('guest.result_cta')}
           </p>
           <TelegramLoginButton botName={BOT_USERNAME} onAuth={onAuth} />
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '8px', maxWidth: '300px', margin: '0 auto', flexWrap: 'wrap' }}>
+      <div class="flex gap-sm" style={{ maxWidth: '300px', margin: '0 auto', flexWrap: 'wrap' }}>
         <button
           class="btn-primary"
           style={{ flex: 1 }}
@@ -61,7 +67,7 @@ export function TaskResult({ t, result, onRetry, onBack, isGuest, onAuth }: Prop
         </button>
         <button
           class="btn-primary"
-          style={{ flex: 1, background: 'var(--tg-theme-secondary-bg-color)', color: 'var(--tg-theme-text-color)' }}
+          style={{ flex: 1, background: 'var(--brand-card)', color: 'var(--brand-text)' }}
           onClick={onBack}
         >
           {t('common.back')}

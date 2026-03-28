@@ -3,6 +3,7 @@ import { eq, sql, desc } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { taskAttempts, tasks, users, streaks } from '../db/schema.js';
 import { authMiddleware } from '../auth/index.js';
+import { getCognitiveProfile, getCategoryTrends } from '../services/cognitive-profile.js';
 
 export async function progressRoutes(app: FastifyInstance) {
   app.get('/api/progress', { preHandler: authMiddleware }, async (request, reply) => {
@@ -49,6 +50,10 @@ export async function progressRoutes(app: FastifyInstance) {
       .from(streaks)
       .where(eq(streaks.userId, user.id));
 
+    // Cognitive profile ratings and trends
+    const categoryRatings = await getCognitiveProfile(user.id);
+    const { weeklyTrend, monthlyTrend } = await getCategoryTrends(user.id);
+
     return {
       daily: daily.map((d) => ({
         date: d.date,
@@ -68,6 +73,9 @@ export async function progressRoutes(app: FastifyInstance) {
             lastActivityDate: streak.lastActivityDate?.toISOString() ?? null,
           }
         : { current: 0, longest: 0, lastActivityDate: null },
+      categoryRatings,
+      weeklyTrend,
+      monthlyTrend,
     };
   });
 }

@@ -76,7 +76,7 @@ export function Profile({ t, mode, onLogout }: Props) {
   if (error) {
     return (
       <div class="page">
-        <div class="card" style={{ textAlign: 'center', padding: '24px', color: 'var(--tg-theme-destructive-text-color)' }}>
+        <div class="card" style={{ textAlign: 'center', padding: '24px', color: 'var(--brand-danger)' }}>
           ⚠️ {error}
         </div>
       </div>
@@ -284,7 +284,7 @@ export function Profile({ t, mode, onLogout }: Props) {
       {mode === 'web' && onLogout && (
         <button
           class="btn-primary"
-          style={{ background: 'var(--tg-theme-secondary-bg-color)', color: 'var(--tg-theme-text-color)', marginTop: '16px' }}
+          style={{ background: 'var(--brand-card)', color: 'var(--brand-text)', marginTop: '16px' }}
           onClick={onLogout}
         >
           {t('profile.logout')}

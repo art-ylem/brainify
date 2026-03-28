@@ -6,6 +6,8 @@ import { optionalAuthMiddleware } from '../auth/index.js';
 import { taskRegistry } from '@brainify/shared';
 import { checkTaskLimit, incrementDailyTaskCount } from '../middleware/subscription.js';
 import { createGuestSession, incrementGuestDailyCount } from '../services/guest-session.js';
+import { getRecommendedDifficulty, getLastDifficulty } from '../services/difficulty.js';
+import { getDailyChallenge, markSessionAsDailyChallenge } from '../services/daily-challenge.js';
 import { randomUUID } from 'node:crypto';
 
 const VALID_CATEGORIES = ['memory', 'attention', 'logic', 'speed'] as const;
@@ -14,7 +16,7 @@ const VALID_CATEGORIES = ['memory', 'attention', 'logic', 'speed'] as const;
 const SESSION_TTL_MS = 10 * 60 * 1000;
 
 export async function taskRoutes(app: FastifyInstance) {
-  app.get('/api/tasks', async (request, reply) => {
+  app.get('/api/tasks', { preHandler: optionalAuthMiddleware }, async (request, reply) => {
     const { category } = request.query as { category?: string };
 
     if (category && !VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])) {
@@ -28,13 +30,40 @@ export async function taskRoutes(app: FastifyInstance) {
 
     const result = await db.select().from(tasks).where(and(...conditions));
 
-    return result.map((task) => ({
-      id: task.id,
-      type: task.type,
-      category: task.category,
-      name: task.name,
-      descriptionKey: task.descriptionKey,
-    }));
+    // Enrich with recommendations for authenticated users
+    let userId: number | null = null;
+    if (request.auth) {
+      const [user] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.telegramId, BigInt(request.auth.telegramUser.id)));
+      userId = user?.id ?? null;
+    }
+
+    const enriched = await Promise.all(
+      result.map(async (task) => {
+        const base = {
+          id: task.id,
+          type: task.type,
+          category: task.category,
+          name: task.name,
+          descriptionKey: task.descriptionKey,
+        };
+        if (!userId) return base;
+
+        const [recommended, last] = await Promise.all([
+          getRecommendedDifficulty(userId, task.type),
+          getLastDifficulty(userId, task.type),
+        ]);
+        return {
+          ...base,
+          recommendedDifficulty: recommended,
+          lastDifficulty: last,
+        };
+      }),
+    );
+
+    return enriched;
   });
 
   app.get('/api/tasks/:id', async (request, reply) => {
@@ -72,11 +101,12 @@ export async function taskRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Invalid task ID' });
     }
 
-    const body = request.body as { difficulty?: unknown } | null;
+    const body = request.body as { difficulty?: unknown; isDailyChallenge?: unknown } | null;
     const difficulty = body?.difficulty !== undefined ? Number(body.difficulty) : 1;
     if (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 5) {
       return reply.code(400).send({ error: 'difficulty must be an integer between 1 and 5' });
     }
+    const isDailyChallenge = body?.isDailyChallenge === true;
 
     // Verify task exists
     const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
@@ -136,6 +166,18 @@ export async function taskRoutes(app: FastifyInstance) {
         expiresAt: new Date(Date.now() + SESSION_TTL_MS),
       })
       .returning();
+
+    // Mark session as daily challenge if requested and valid
+    if (isDailyChallenge) {
+      try {
+        const challenge = await getDailyChallenge();
+        if (challenge.taskId === taskId && challenge.difficulty === difficulty) {
+          await markSessionAsDailyChallenge(session.id);
+        }
+      } catch {
+        // Daily challenge unavailable — ignore
+      }
+    }
 
     // Return sanitized data (no answers)
     const clientData = taskDef.sanitizeForClient(generated.data);

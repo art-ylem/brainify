@@ -38,15 +38,16 @@ brainify/
 ### `packages/shared`
 - Типы и интерфейсы (`TaskDefinition`, DTO)
 - Генераторы заданий (Шульте, арифметика, Stroop и т.д.)
+- Скоринг (`getMaxScore` — максимальный балл за задание)
 - i18n — утилита доступа к переводам, файлы локалей (`locales/ru.json`, `locales/en.json`)
 
 ### `packages/api`
 - Fastify-сервер
 - Drizzle ORM — схема БД, миграции
-- Авторизация через Telegram `initData` (HMAC-SHA256)
-- REST-эндпоинты: users, tasks, attempts, progress, leaderboard, duels, friends, subscription
+- Авторизация через Telegram `initData` (HMAC-SHA256), Bearer JWT (web), гостевой режим
+- REST-эндпоинты: users, tasks, attempts, progress, leaderboard, duels, friends, subscription, daily-challenge, cognitive-profile, training-session, onboarding
 - Rate limiting
-- Сервисы: streaks, achievements, share-card, referral, subscription
+- Сервисы: streaks, achievements, share-card, referral, subscription, cognitive-profile (рейтинг по категориям, перцентили, тренды)
 
 ### `packages/bot`
 - grammY — обработка команд (`/start`, `/invite`, быстрое задание)
@@ -58,17 +59,19 @@ brainify/
 ### `packages/webapp`
 - Preact + Vite
 - Telegram WebApp JS SDK
-- Страницы: каталог заданий, прохождение, результат, прогресс, лидерборд, дуэли, профиль, подписка
+- Страницы: каталог заданий, прохождение, результат, прогресс (когнитивный профиль), лидерборд, дуэли, профиль, подписка, онбординг, мини-тренировка
 - Компоненты заданий: Шульте, последовательность, арифметика, Stroop, числовой ряд, пары, паттерн
+- Компоненты аналитики: RadarChart (SVG), PercentileBadge, CategoryProgress
+- CSS-дизайн-система: семантические токены (`--brand-*`), утилитарные классы, BEM-компоненты, адаптивность, анимации
 - i18n — мультиязычный UI (ru/en)
-- Бюджет бандла: ≤ 200 КБ gzip
+- Бюджет бандла: ≤ 200 КБ gzip (текущий: ~25 КБ)
 
 ## База данных
 
 Основные таблицы (Drizzle ORM):
-- `users` — Telegram ID, язык, дата регистрации, подписка
+- `users` — Telegram ID, язык, дата регистрации, подписка, onboardingCompleted
 - `tasks` — шаблоны заданий (тип, категория, параметры)
-- `task_attempts` — результаты прохождений (user, task, очки, время)
+- `task_attempts` — результаты прохождений (user, task, очки, время, difficulty)
 - `friendships` — связи между пользователями
 - `duels` — вызовы на дуэль (инициатор, соперник, задание, статус)
 - `subscriptions` — статус подписки (trial/active/free)

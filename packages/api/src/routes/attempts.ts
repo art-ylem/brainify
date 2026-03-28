@@ -8,6 +8,7 @@ import type { GeneratedTask } from '@brainify/shared';
 import { updateStreak } from '../services/streaks.js';
 import { checkAchievements } from '../services/achievements.js';
 import { getGuestSession, deleteGuestSession } from '../services/guest-session.js';
+import { isDailyChallengeCompleted, markDailyChallengeCompleted, applyDailyBonus, isSessionDailyChallenge } from '../services/daily-challenge.js';
 
 export async function attemptRoutes(app: FastifyInstance) {
   app.post('/api/attempts', { preHandler: optionalAuthMiddleware }, async (request, reply) => {
@@ -108,6 +109,22 @@ export async function attemptRoutes(app: FastifyInstance) {
     const generated = session.generatedData as GeneratedTask;
     const result = taskDef.validate(generated, body.answer, body.timeMs);
 
+    // Check if this session was started as a daily challenge and apply bonus
+    let finalScore = result.score;
+    let isDailyBonus = false;
+    try {
+      if (
+        await isSessionDailyChallenge(session.id) &&
+        !(await isDailyChallengeCompleted(user.id))
+      ) {
+        finalScore = applyDailyBonus(result.score);
+        isDailyBonus = true;
+        await markDailyChallengeCompleted(user.id, finalScore);
+      }
+    } catch {
+      // Daily challenge not available — skip bonus
+    }
+
     // Mark session completed
     await db
       .update(taskSessions)
@@ -121,7 +138,7 @@ export async function attemptRoutes(app: FastifyInstance) {
         userId: user.id,
         taskId: session.taskId,
         sessionId: session.id,
-        score: result.score,
+        score: finalScore,
         timeMs: Math.round(body.timeMs),
         difficulty: session.difficulty,
       })
@@ -136,12 +153,13 @@ export async function attemptRoutes(app: FastifyInstance) {
     return {
       id: attempt.id,
       taskId: attempt.taskId,
-      score: result.score,
+      score: finalScore,
       timeMs: attempt.timeMs,
       difficulty: attempt.difficulty,
       isCorrect: result.isCorrect,
       details: result.details ?? null,
       completedAt: attempt.completedAt.toISOString(),
+      dailyBonus: isDailyBonus || undefined,
     };
   });
 }

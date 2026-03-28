@@ -44,6 +44,7 @@ export const users = pgTable('users', {
   languageCode: text('language_code').default('en').notNull(),
   subscriptionStatus: subscriptionStatusEnum('subscription_status').default('trial').notNull(),
   trialEndsAt: timestamp('trial_ends_at', { withTimezone: true }),
+  onboardingCompleted: boolean('onboarding_completed').default(false).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

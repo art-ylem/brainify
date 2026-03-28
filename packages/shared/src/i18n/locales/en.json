@@ -144,10 +144,54 @@
     "limit_text": "You have tried 3 tasks. Sign in with Telegram to get full access.",
     "result_cta": "Sign in to save progress and compete"
   },
+  "challenge": {
+    "daily_title": "Daily Challenge",
+    "accept": "Accept challenge",
+    "completed": "Completed",
+    "bonus": "Bonus"
+  },
+  "difficulty": {
+    "title": "Choose difficulty",
+    "1": "Beginner",
+    "2": "Intermediate",
+    "3": "Advanced",
+    "4": "Expert",
+    "5": "Master",
+    "recommended": "Recommended",
+    "start": "Start task"
+  },
+  "cognitive": {
+    "title": "Cognitive Profile",
+    "overall": "Overall Rating",
+    "percentile": "Percentiles",
+    "percentile_text": "Your score is better than the indicated percentage of users",
+    "weekly_trend": "This week",
+    "not_enough_data": "Complete tasks to see your cognitive profile"
+  },
+  "training": {
+    "title": "Mini Training",
+    "start": "4 tasks from each category",
+    "step": "Task",
+    "summary": "Training Results",
+    "total_score": "Total Score"
+  },
+  "recommendation": {
+    "expert": "Excellent! You demonstrate expert-level cognitive abilities.",
+    "intermediate": "Good level! Keep training to improve your results.",
+    "beginner": "Start with easy tasks and gradually increase difficulty."
+  },
   "paywall": {
     "title": "Premium feature",
     "text": "This feature requires a Premium subscription",
     "features": "Unlimited tasks, duels, statistics and all achievements",
     "cta": "Get Premium"
+  },
+  "onboarding": {
+    "title": "Discover your cognitive level",
+    "description": "Complete 4 short tasks so we can build your cognitive profile and tailor the best training program for you.",
+    "start": "Start assessment",
+    "skip": "Skip",
+    "result_title": "Your cognitive profile",
+    "continue": "Continue"
   }
 }

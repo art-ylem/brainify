@@ -10,20 +10,20 @@ interface Props {
 
 export function LoginScreen({ t, onAuth, onGuest }: Props) {
   return (
-    <div class="page" style={{ textAlign: 'center', paddingTop: '60px' }}>
+    <div class="login-screen fade-in">
       <div style={{ fontSize: '64px', marginBottom: '16px' }}>🧠</div>
       <h1 style={{ fontSize: '28px', fontWeight: 700, marginBottom: '8px' }}>Brainify</h1>
-      <p style={{ color: 'var(--tg-theme-hint-color)', fontSize: '15px', marginBottom: '32px', maxWidth: '280px', margin: '0 auto 32px' }}>
+      <p class="text-hint" style={{ fontSize: '15px', maxWidth: '280px', marginBottom: '32px' }}>
         {t('login.description')}
       </p>
 
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '24px', width: '100%', maxWidth: '320px' }}>
         <TelegramLoginButton botName={BOT_USERNAME} onAuth={onAuth} />
       </div>
 
       <button
         class="btn-primary"
-        style={{ maxWidth: '280px', margin: '0 auto', background: 'var(--tg-theme-secondary-bg-color)', color: 'var(--tg-theme-text-color)' }}
+        style={{ maxWidth: '320px', background: 'var(--brand-card)', color: 'var(--brand-text)' }}
         onClick={onGuest}
       >
         {t('login.try_without')}

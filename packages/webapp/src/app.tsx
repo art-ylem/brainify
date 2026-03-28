@@ -11,13 +11,17 @@ import { Profile } from './pages/Profile.js';
 import { NavBar } from './components/NavBar.js';
 import { LoginScreen } from './components/LoginScreen.js';
 import { GuestBanner } from './components/GuestBanner.js';
+import { TrainingSession } from './pages/TrainingSession.js';
+import { Onboarding } from './pages/Onboarding.js';
 import type { AttemptResult } from './api/client.js';
 
-type Page = 'catalog' | 'play' | 'result' | 'progress' | 'leaderboard' | 'duels' | 'profile';
+type Page = 'catalog' | 'play' | 'result' | 'progress' | 'leaderboard' | 'duels' | 'profile' | 'training';
 
 interface PlayState {
   taskId: number;
   taskType: string;
+  difficulty: number;
+  isDailyChallenge?: boolean;
   duelSessionId?: number;
   duelTaskData?: Record<string, unknown>;
   duelId?: number;
@@ -31,6 +35,7 @@ export function App() {
   const [playState, setPlayState] = useState<PlayState | null>(null);
   const [lastResult, setLastResult] = useState<AttemptResult | null>(null);
   const [guestBrowsing, setGuestBrowsing] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(false);
 
   if (loading) {
     return <div class="loading">{t('common.loading')}</div>;
@@ -61,8 +66,19 @@ export function App() {
 
   const isGuest = mode === 'guest';
 
-  function handleSelectTask(taskId: number, taskType: string) {
-    setPlayState({ taskId, taskType });
+  // Show onboarding for authenticated users who haven't completed it
+  if (!isGuest && _user && _user.onboardingCompleted === false && !onboardingDone) {
+    return (
+      <Onboarding
+        t={t}
+        onComplete={() => setOnboardingDone(true)}
+        onSkip={() => setOnboardingDone(true)}
+      />
+    );
+  }
+
+  function handleSelectTask(taskId: number, taskType: string, difficulty: number, isDailyChallenge?: boolean) {
+    setPlayState({ taskId, taskType, difficulty, isDailyChallenge });
     setPage('play');
   }
 
@@ -89,7 +105,7 @@ export function App() {
       {page === 'catalog' && (
         <>
           {isGuest && <div style={{ padding: '16px 16px 0' }}><GuestBanner t={t} onAuth={loginViaTelegram} /></div>}
-          <TaskCatalog t={t} onSelect={handleSelectTask} />
+          <TaskCatalog t={t} onSelect={handleSelectTask} isGuest={isGuest} onStartTraining={() => setPage('training')} />
         </>
       )}
       {page === 'play' && playState && (
@@ -97,6 +113,8 @@ export function App() {
           t={t}
           taskId={playState.taskId}
           taskType={playState.taskType}
+          difficulty={playState.difficulty}
+          isDailyChallenge={playState.isDailyChallenge}
           duelSessionId={playState.duelSessionId}
           duelTaskData={playState.duelTaskData}
           duelId={playState.duelId}
@@ -118,8 +136,11 @@ export function App() {
           onAuth={loginViaTelegram}
         />
       )}
+      {page === 'training' && (
+        <TrainingSession t={t} onBack={handleBackToCatalog} />
+      )}
       {page === 'progress' && (
-        <Progress t={t} />
+        <Progress t={t} isGuest={isGuest} />
       )}
       {page === 'leaderboard' && (
         <Leaderboard t={t} />
@@ -131,6 +152,7 @@ export function App() {
             setPlayState({
               taskId: 0,
               taskType,
+              difficulty: 1,
               duelSessionId: sessionId,
               duelTaskData: taskData,
               duelId,

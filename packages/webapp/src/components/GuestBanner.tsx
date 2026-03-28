@@ -9,19 +9,14 @@ interface Props {
 
 export function GuestBanner({ t, onAuth }: Props) {
   return (
-    <div style={{
-      background: 'var(--tg-theme-secondary-bg-color)',
-      borderRadius: '12px',
-      padding: '12px 16px',
-      marginBottom: '12px',
-      display: 'flex',
+    <div class="card flex gap-sm" style={{
       alignItems: 'center',
-      gap: '12px',
       flexWrap: 'wrap',
+      padding: '12px 16px',
     }}>
       <div style={{ flex: 1, minWidth: '180px' }}>
-        <div style={{ fontSize: '14px', fontWeight: 600 }}>{t('guest.banner_title')}</div>
-        <div style={{ fontSize: '12px', color: 'var(--tg-theme-hint-color)', marginTop: '2px' }}>
+        <div class="font-bold" style={{ fontSize: '14px' }}>{t('guest.banner_title')}</div>
+        <div class="text-hint" style={{ fontSize: '12px', marginTop: '2px' }}>
           {t('guest.banner_subtitle')}
         </div>
       </div>

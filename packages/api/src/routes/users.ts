@@ -22,6 +22,7 @@ export async function userRoutes(app: FastifyInstance) {
       languageCode: user.languageCode,
       subscriptionStatus: user.subscriptionStatus,
       trialEndsAt: user.trialEndsAt?.toISOString() ?? null,
+      onboardingCompleted: user.onboardingCompleted,
       createdAt: user.createdAt.toISOString(),
     };
   });

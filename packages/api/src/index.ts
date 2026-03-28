@@ -19,6 +19,10 @@ import { shareRoutes } from './routes/share.js';
 import { internalRoutes } from './routes/subscription.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { authRoutes } from './routes/auth.js';
+import { dailyChallengeRoutes } from './routes/daily-challenge.js';
+import { cognitiveRoutes } from './routes/cognitive.js';
+import { trainingRoutes } from './routes/training.js';
+import { onboardingRoutes } from './routes/onboarding.js';
 
 const app = Fastify({ logger: true, trustProxy: true });
 
@@ -27,6 +31,10 @@ await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
 
 // Routes
 await app.register(authRoutes);
+await app.register(dailyChallengeRoutes);
+await app.register(cognitiveRoutes);
+await app.register(trainingRoutes);
+await app.register(onboardingRoutes);
 await app.register(userRoutes);
 await app.register(taskRoutes);
 await app.register(attemptRoutes);

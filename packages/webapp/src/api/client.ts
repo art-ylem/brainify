@@ -66,6 +66,7 @@ export interface UserProfile {
   subscriptionStatus: string;
   trialEndsAt: string | null;
   createdAt: string;
+  onboardingCompleted?: boolean;
 }
 
 export function getMe() {
@@ -85,6 +86,8 @@ export interface TaskInfo {
   category: string;
   name: string;
   descriptionKey: string;
+  recommendedDifficulty?: number;
+  lastDifficulty?: number;
 }
 
 export function getTasks(category?: string) {
@@ -107,10 +110,10 @@ export interface TaskSession {
   timeLimitMs: number | null;
 }
 
-export function startTaskSession(taskId: number, difficulty = 1) {
+export function startTaskSession(taskId: number, difficulty = 1, isDailyChallenge = false) {
   return request<TaskSession>(`/api/tasks/${taskId}/start`, {
     method: 'POST',
-    body: JSON.stringify({ difficulty }),
+    body: JSON.stringify({ difficulty, ...(isDailyChallenge ? { isDailyChallenge: true } : {}) }),
   });
 }
 
@@ -136,14 +139,124 @@ export function submitAttempt(sessionId: number | string, answer: unknown, timeM
 
 // --- Progress ---
 
+// --- Daily Challenge ---
+
+export interface DailyChallengeData {
+  taskId: number;
+  taskType: string;
+  category: string;
+  difficulty: number;
+  bonusMultiplier: number;
+  completed: boolean;
+}
+
+export function getDailyChallenge() {
+  return request<DailyChallengeData>('/api/daily-challenge');
+}
+
+// --- Progress (continued) ---
+
+export interface CategoryRatings {
+  memory: number;
+  attention: number;
+  logic: number;
+  speed: number;
+}
+
 export interface ProgressData {
   daily: Array<{ date: string; totalScore: number; count: number }>;
   byCategory: Array<{ category: string; totalScore: number; count: number; avgTimeMs: number }>;
   streak: { current: number; longest: number; lastActivityDate: string | null };
+  categoryRatings?: CategoryRatings;
+  weeklyTrend?: CategoryRatings;
+  monthlyTrend?: CategoryRatings;
 }
 
 export function getProgress() {
   return request<ProgressData>('/api/progress');
+}
+
+// --- Cognitive Profile ---
+
+export interface CognitiveProfileData {
+  categories: CategoryRatings;
+  percentiles: CategoryRatings;
+  overallRating: number;
+  totalAttempts: number;
+  recommendation: string;
+}
+
+export function getCognitiveProfile() {
+  return request<CognitiveProfileData>('/api/profile/cognitive');
+}
+
+// --- Training Session ---
+
+export interface TrainingSessionData {
+  trainingId: string;
+  sessions: Array<{
+    sessionId: number;
+    taskId: number;
+    type: string;
+    category: string;
+    difficulty: number;
+    data: Record<string, unknown>;
+    timeLimitMs: number | null;
+  }>;
+}
+
+export interface TrainingSummary {
+  trainingId: string;
+  totalSessions: number;
+  completedSessions: number;
+  allCompleted: boolean;
+  totalScore: number;
+  totalTimeMs: number;
+  results: Array<{
+    category: string;
+    taskType: string;
+    difficulty: number;
+    status: 'completed' | 'active' | 'expired';
+    score: number | null;
+    timeMs: number | null;
+  }>;
+  startedAt: string;
+}
+
+export function startTrainingSession() {
+  return request<TrainingSessionData>('/api/training-session/start', { method: 'POST' });
+}
+
+export function getTrainingSummary(trainingId: string) {
+  return request<TrainingSummary>(`/api/training-session/${encodeURIComponent(trainingId)}/summary`);
+}
+
+// --- Onboarding ---
+
+export interface OnboardingData {
+  sessions: Array<{
+    sessionId: number;
+    taskId: number;
+    type: string;
+    category: string;
+    difficulty: number;
+    data: Record<string, unknown>;
+    timeLimitMs: number | null;
+  }>;
+}
+
+export interface OnboardingResult {
+  categories: { memory: number; attention: number; logic: number; speed: number };
+  overallRating: number;
+  recommendation: string;
+}
+
+export function startOnboarding() {
+  return request<OnboardingData>('/api/onboarding/start', { method: 'POST' });
+}
+
+export function completeOnboarding() {
+  return request<OnboardingResult>('/api/onboarding/complete', { method: 'POST' });
 }
 
 // --- Leaderboard ---
